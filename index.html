@@ -18,6 +18,8 @@
     --cream:#f3e4dd;
     --gold:#caa06a;
     --line: rgba(231,179,171,0.22);
+    --ease-premium: cubic-bezier(.16,1,.3,1);
+    --ease-soft: cubic-bezier(.22,.8,.36,1);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{height:100%;}
@@ -43,12 +45,13 @@
     background: radial-gradient(120% 90% at 50% 0%, rgba(74,13,20,0.72) 0%, rgba(26,5,8,0.88) 55%, rgba(8,2,3,0.96) 100%);
   }
 
-  .stars{position:fixed; inset:0; pointer-events:none; z-index:0;}
+  .stars{position:fixed; inset:0; pointer-events:none; z-index:0; perspective:600px;}
   .stars span{
-    position:absolute; width:2px; height:2px; background:var(--rose);
-    border-radius:50%; opacity:.35; animation: twinkle 4s infinite ease-in-out;
+    position:absolute; border-radius:50%; background:var(--rose);
+    animation: twinkle var(--dur,4s) infinite ease-in-out, drift var(--drift,40s) linear infinite;
   }
   @keyframes twinkle{ 0%,100%{opacity:.15} 50%{opacity:.6} }
+  @keyframes drift{ from{ transform:translateY(0);} to{ transform:translateY(-40px);} }
 
   .app{
     position:relative; z-index:1;
@@ -56,22 +59,24 @@
     min-height:100vh;
     display:flex; flex-direction:column;
     padding: 48px 28px 40px;
+    perspective: 1200px;
   }
 
   .screen{ display:none; flex:1; flex-direction:column; opacity:0; }
   .screen.active{ display:flex; opacity:1; }
-  .screen.fade-in{ animation: fadeIn .7s cubic-bezier(.22,.8,.36,1) forwards; }
-  .screen.fade-out{ animation: fadeOut .32s ease forwards; }
-  @keyframes fadeIn{ from{opacity:0; transform:translateY(16px) scale(.97); filter:blur(8px);} to{opacity:1; transform:translateY(0) scale(1); filter:blur(0);} }
-  @keyframes fadeOut{ from{opacity:1; transform:scale(1); filter:blur(0);} to{opacity:0; transform:scale(1.03); filter:blur(8px);} }
+  .screen.fade-in{ animation: fadeIn .9s var(--ease-premium) forwards; }
+  .screen.fade-out{ animation: fadeOut .4s var(--ease-soft) forwards; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(26px) scale(.94) rotateX(8deg); filter:blur(10px);} to{opacity:1; transform:translateY(0) scale(1) rotateX(0deg); filter:blur(0);} }
+  @keyframes fadeOut{ from{opacity:1; transform:scale(1) rotateX(0deg); filter:blur(0);} to{opacity:0; transform:scale(1.05) rotateX(-8deg); filter:blur(10px);} }
 
-  .stagger > *{ opacity:0; animation: rise .6s ease forwards; }
+  .stagger{ transform-style:preserve-3d; }
+  .stagger > *{ opacity:0; animation: rise .7s var(--ease-premium) forwards; }
   .stagger > *:nth-child(1){ animation-delay:.05s; }
   .stagger > *:nth-child(2){ animation-delay:.2s; }
   .stagger > *:nth-child(3){ animation-delay:.4s; }
   .stagger > *:nth-child(4){ animation-delay:.6s; }
   .stagger > *:nth-child(5){ animation-delay:.8s; }
-  @keyframes rise{ from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:translateY(0)} }
+  @keyframes rise{ from{opacity:0; transform:translateY(18px) rotateX(14deg);} to{opacity:1; transform:translateY(0) rotateX(0deg);} }
 
   h1.display{
     font-family:'Marcellus', serif;
@@ -92,7 +97,7 @@
 
   /* ---------- LOCK SCREEN ---------- */
   #lock{ align-items:center; justify-content:center; text-align:center; gap:0; position:relative; }
-  .avatar-wrap{ position:relative; width:120px; height:120px; margin-bottom:10px; }
+  .avatar-wrap{ position:relative; width:120px; height:120px; margin-bottom:10px; perspective:400px; }
   .avatar-ring{
     position:absolute; inset:-8px; border-radius:50%;
     border:1px solid var(--line);
@@ -130,15 +135,21 @@
   .dots.shake-anim{ animation: shakeDot .4s; }
   @keyframes shakeDot{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 50%{transform:translateX(8px)} 75%{transform:translateX(-6px)} }
 
-  .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; perspective:500px; }
   .key{
     font-family:'Marcellus',serif; font-size:20px; color:var(--cream);
     background: rgba(74,13,20,0.35); border:1px solid var(--line);
     border-radius:12px; padding:16px 0; text-align:center; cursor:pointer;
-    transition: .15s; position:relative; overflow:hidden;
+    transition: transform .18s var(--ease-premium), box-shadow .18s, background .18s;
+    position:relative; overflow:hidden; transform-style:preserve-3d;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35), 0 6px 14px -4px rgba(0,0,0,.5);
   }
-  .key.pressed{ background: var(--ember-soft); border-color:var(--ember); box-shadow:0 0 16px rgba(179,20,31,0.7); transform: scale(.95); }
-  .key.ghost{ background:transparent; border:none; color: var(--rose); opacity:.6; font-size:15px;}
+  .key.pressed{
+    background: var(--ember-soft); border-color:var(--ember);
+    box-shadow: 0 0 20px rgba(179,20,31,0.7), 0 1px 0 rgba(0,0,0,.35);
+    transform: translateZ(-5px) translateY(3px) scale(.97);
+  }
+  .key.ghost{ background:transparent; border:none; box-shadow:none; color: var(--rose); opacity:.6; font-size:15px;}
   .key-ripple{
     position:absolute; border-radius:50%; background: rgba(231,179,171,0.45);
     transform:scale(0); animation: rippleAnim .55s ease-out forwards; pointer-events:none;
@@ -148,23 +159,33 @@
 
   /* ---------- LOADING (premium) ---------- */
   #loading{ align-items:center; justify-content:center; text-align:center; }
-  .loader-ring{ position:relative; width:150px; height:150px; margin-bottom:26px; }
+  .loader-ring{ position:relative; width:150px; height:150px; margin-bottom:26px; perspective:900px; }
   .ring-svg{ width:100%; height:100%; transform:rotate(-90deg); filter: drop-shadow(0 0 14px rgba(179,20,31,0.5)); }
   .ring-bg{ fill:none; stroke:rgba(231,179,171,0.15); stroke-width:2.5; }
   .ring-fg{ fill:none; stroke:url(#ringGradient); stroke-width:2.5; stroke-linecap:round;
-    stroke-dasharray:326.7; stroke-dashoffset:326.7; transition: stroke-dashoffset 2.6s cubic-bezier(.4,0,.2,1); }
+    stroke-dasharray:326.7; stroke-dashoffset:326.7; transition: stroke-dashoffset 2.6s var(--ease-premium); }
   .ring-orbit{ position:absolute; inset:-10px; border-radius:50%; border:1px dashed rgba(231,179,171,0.25); animation: spin 12s linear infinite; pointer-events:none; }
   @keyframes spin{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+  .orbit-track{ position:absolute; inset:-22px; border-radius:50%; animation: spin 9s linear infinite; pointer-events:none; }
+  .orbit-track.o2{ inset:-34px; animation-duration:14s; animation-direction:reverse; }
+  .orbit-dot{ position:absolute; top:-2px; left:50%; width:5px; height:5px; margin-left:-2.5px; border-radius:50%; background:var(--gold); box-shadow:0 0 9px var(--gold); }
+  .orbit-track.o2 .orbit-dot{ background:var(--rose); box-shadow:0 0 9px var(--rose); width:4px; height:4px; margin-left:-2px; }
   .loader-photo{
-    position:absolute; inset:22px; border-radius:50%; overflow:hidden;
+    position:absolute; inset:22px; border-radius:50%;
+    transform-style:preserve-3d;
+    animation: medallionSpin 6s var(--ease-premium) infinite, breathe 2.6s ease-in-out infinite;
+  }
+  @keyframes medallionSpin{ 0%{transform:rotateY(0deg);} 42%{transform:rotateY(180deg);} 58%{transform:rotateY(180deg);} 100%{transform:rotateY(360deg);} }
+  @keyframes breathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.035); } }
+  .medallion-face{
+    position:absolute; inset:0; border-radius:50%; overflow:hidden; backface-visibility:hidden;
     background: linear-gradient(160deg, var(--ember-soft), var(--wine-950));
     border:1px solid rgba(231,179,171,0.35);
     display:flex; align-items:center; justify-content:center;
-    animation: breathe 2.6s ease-in-out infinite;
   }
-  @keyframes breathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.035); } }
-  .loader-photo img{ width:100%; height:100%; object-fit:cover; }
-  .loader-photo svg{ width:44px; height:44px; opacity:.8; }
+  .medallion-face.back{ transform: rotateY(180deg); }
+  .medallion-face img{ width:100%; height:100%; object-fit:cover; }
+  .medallion-face svg{ width:40px; height:40px; opacity:.85; }
   .loader-photo-fallback{ display:none; align-items:center; justify-content:center; width:100%; height:100%; }
   .loading-text{
     font-family:'Marcellus',serif; letter-spacing:1.5px; font-size:18px; margin-bottom:18px;
@@ -175,6 +196,7 @@
   @keyframes shimmerMove{ 0%{ background-position:0% 50%; } 100%{ background-position:220% 50%; } }
   .progress-pct{ font-family:'Marcellus',serif; font-size:13px; letter-spacing:2px; color:var(--rose); opacity:.7; margin-top:2px; }
   .progress-sub{ margin-top:16px; font-size:13px; letter-spacing:3px; opacity:.45; }
+
 
   /* shared button */
   .btn{
@@ -193,15 +215,16 @@
 
   /* ---------- WELCOME ---------- */
   #welcome{ align-items:center; justify-content:center; text-align:center; }
-  .panda{ width:150px; height:150px; margin: 20px 0; position:relative; }
+  .panda{ width:150px; height:150px; margin: 20px 0; position:relative; animation: float3d 4.2s ease-in-out infinite; }
   .panda svg{ width:100%; height:100%; }
+  @keyframes float3d{ 0%,100%{ transform:translateY(0) rotateZ(0deg);} 50%{ transform:translateY(-7px) rotateZ(1.4deg);} }
   .zzz{ position:absolute; top:-6px; right:6px; font-family:'Marcellus',serif; color:var(--rose); font-size:15px; opacity:.7; animation: floatZ2 3s infinite ease-in-out;}
   @keyframes floatZ2{ 0%,100%{transform:translateY(0); opacity:.7} 50%{transform:translateY(-8px); opacity:1} }
   .lead{ font-size:19px; opacity:.75; font-style:italic; margin: 6px 0 30px; }
 
   /* ---------- AGE COUNTER ---------- */
   #age{ align-items:center; justify-content:center; text-align:center; }
-  .sticker{ width:110px; height:110px; margin: 4px 0 14px; filter: drop-shadow(0 0 24px rgba(179,20,31,0.5)); }
+  .sticker{ width:110px; height:110px; margin: 4px 0 14px; filter: drop-shadow(0 0 24px rgba(179,20,31,0.5)); animation: float3d 4.6s ease-in-out infinite; }
   .completed-label{ font-size:16px; font-style:italic; opacity:.6; margin: 18px 0 22px; }
   .stat-big{ font-family:'Marcellus',serif; font-size: clamp(56px,18vw,72px); color: var(--rose); text-shadow: 0 0 30px rgba(179,20,31,0.55); line-height:1; }
   .stat-label{ letter-spacing:3px; font-size:13px; opacity:.55; margin-top:10px; }
@@ -233,14 +256,27 @@
   .dots-nav span.active{ background: var(--ember); box-shadow:0 0 8px var(--ember); }
 
   /* ---------- LETTER ---------- */
-  #letter-seal{ align-items:center; justify-content:center; text-align:center; }
+  #letter-seal{ align-items:center; justify-content:center; text-align:center; perspective:900px; }
   .envelope{
-    width:210px; height:150px; border-radius:16px; border:1.5px solid var(--ember-soft);
+    width:210px; height:150px; margin: 30px 0 10px; cursor:pointer; position:relative;
+    perspective: 600px;
+  }
+  .envelope-body{
+    position:absolute; inset:0; border-radius:16px; border:1.5px solid var(--ember-soft);
     background: linear-gradient(160deg, var(--wine-800), var(--wine-950));
     display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px;
-    margin: 30px 0 10px; cursor:pointer; position:relative;
-    box-shadow: inset 0 0 30px rgba(179,20,31,0.15);
+    box-shadow: inset 0 0 30px rgba(179,20,31,0.15); overflow:hidden;
   }
+  .envelope-flap{
+    position:absolute; top:0; left:0; width:100%; height:78px; z-index:2;
+    background: linear-gradient(155deg, var(--ember-soft), var(--wine-800));
+    border:1.5px solid var(--ember-soft); border-bottom:none; border-radius:16px 16px 0 0;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top center; transform-style:preserve-3d;
+    transition: transform .6s var(--ease-premium);
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+  }
+  .envelope.opening .envelope-flap{ transform: rotateX(-155deg); }
   .heart-btn{
     width:60px; height:60px; border-radius:50%; border:1px solid var(--ember);
     display:flex; align-items:center; justify-content:center;
@@ -259,6 +295,12 @@
   .letter-card{
     background: rgba(10,3,4,0.6); border:1px solid var(--line); border-radius:20px;
     padding: 26px 24px; margin-top:6px; width:100%;
+    transform-style:preserve-3d;
+  }
+  .letter-card.flip-in{ animation: letterFlipIn .85s var(--ease-premium) forwards; }
+  @keyframes letterFlipIn{
+    from{ opacity:0; transform: rotateX(-22deg) translateY(26px) scale(.94); filter:blur(6px); }
+    to{ opacity:1; transform: rotateX(0deg) translateY(0) scale(1); filter:blur(0); }
   }
   .letter-head{ display:flex; align-items:flex-start; justify-content:space-between; }
   .letter-title{ font-family:'Marcellus',serif; font-size:20px; color:var(--rose); }
@@ -343,6 +385,8 @@
   <div class="screen" id="loading">
     <div class="loader-ring">
       <div class="ring-orbit"></div>
+      <div class="orbit-track o1"><span class="orbit-dot"></span></div>
+      <div class="orbit-track o2"><span class="orbit-dot"></span></div>
       <svg class="ring-svg" viewBox="0 0 120 120">
         <defs>
           <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -354,8 +398,13 @@
         <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52"/>
       </svg>
       <div class="loader-photo">
-        <img src="avatar.jpg" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        <div class="loader-photo-fallback">
+        <div class="medallion-face front">
+          <img src="avatar.jpg" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="loader-photo-fallback">
+            <svg viewBox="0 0 24 24" fill="var(--rose)" stroke="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.1 2 4.5 5.6 4c2-.3 3.6.7 4.4 2.2C10.8 4.7 12.4 3.7 14.4 4c3.6.5 5.2 4.1 3.6 7.7C15.5 16.4 12 21 12 21z"/></svg>
+          </div>
+        </div>
+        <div class="medallion-face back">
           <svg viewBox="0 0 24 24" fill="var(--rose)" stroke="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.1 2 4.5 5.6 4c2-.3 3.6.7 4.4 2.2C10.8 4.7 12.4 3.7 14.4 4c3.6.5 5.2 4.1 3.6 7.7C15.5 16.4 12 21 12 21z"/></svg>
         </div>
       </div>
@@ -448,10 +497,13 @@
     <h1 class="display">Une lettre, pour toi</h1>
     <div class="eyebrow" id="letterEyebrow">Touche le cœur pour la découvrir</div>
     <div class="envelope" id="envelopeTap">
-      <div class="heart-btn" id="heartBtn">
-        <svg viewBox="0 0 24 24" fill="var(--ember)" stroke="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.1 2 4.5 5.6 4c2-.3 3.6.7 4.4 2.2C10.8 4.7 12.4 3.7 14.4 4c3.6.5 5.2 4.1 3.6 7.7C15.5 16.4 12 21 12 21z"/></svg>
+      <div class="envelope-body">
+        <div class="heart-btn" id="heartBtn">
+          <svg viewBox="0 0 24 24" fill="var(--ember)" stroke="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.1 2 4.5 5.6 4c2-.3 3.6.7 4.4 2.2C10.8 4.7 12.4 3.7 14.4 4c3.6.5 5.2 4.1 3.6 7.7C15.5 16.4 12 21 12 21z"/></svg>
+        </div>
+        <div class="envelope-caption" id="envelopeCaption">TOUCHER POUR OUVRIR</div>
       </div>
-      <div class="envelope-caption" id="envelopeCaption">TOUCHER POUR OUVRIR</div>
+      <div class="envelope-flap"></div>
     </div>
     <div class="heart-divider"><div class="l"></div><span>♥</span><div class="r"></div></div>
 
@@ -476,32 +528,45 @@
 </div>
 
 <script>
-// stars background
+// stars background — layered depth (bigger = closer = more blur, slower drift)
 const starsEl = document.getElementById('stars');
-for(let i=0;i<28;i++){
+for(let i=0;i<32;i++){
   const s = document.createElement('span');
+  const depth = Math.random();
+  const size = 1 + depth*2.4;
   s.style.left = Math.random()*100+'%';
   s.style.top = Math.random()*100+'%';
-  s.style.animationDelay = (Math.random()*4)+'s';
+  s.style.width = size+'px';
+  s.style.height = size+'px';
+  s.style.opacity = (0.15 + depth*0.35).toFixed(2);
+  s.style.filter = depth > 0.6 ? `blur(${(depth*1.2).toFixed(1)}px)` : 'none';
+  s.style.setProperty('--dur', (3 + Math.random()*3)+'s');
+  s.style.setProperty('--drift', (20 + (1-depth)*40)+'s');
+  s.style.animationDelay = (Math.random()*4)+'s, '+(Math.random()*10)+'s';
   starsEl.appendChild(s);
 }
 
 // ---- screen switching with crossfade ----
+// currentScreenEl is tracked explicitly (not re-queried from the DOM) so that
+// two overlapping transitions can never grab the wrong "current" screen while
+// a previous fade-out cleanup is still pending.
+let currentScreenEl = document.querySelector('.screen.active');
 function showScreen(id){
-  const cur = document.querySelector('.screen.active');
+  const cur = currentScreenEl;
   const next = document.getElementById(id);
   if(cur === next) return;
+  currentScreenEl = next;
   if(cur){
     cur.classList.remove('fade-in');
     cur.classList.add('fade-out');
     setTimeout(()=>{
       cur.classList.remove('active','fade-out');
-    }, 320);
+    }, 400);
   }
   setTimeout(()=>{
     next.classList.add('active','fade-in');
-    setTimeout(()=> next.classList.remove('fade-in'), 750);
-  }, cur ? 260 : 0);
+    setTimeout(()=> next.classList.remove('fade-in'), 950);
+  }, cur ? 320 : 0);
 }
 
 // ---- LOCK SCREEN ----
@@ -733,6 +798,7 @@ function typeLetter(){
 }
 
 document.getElementById('envelopeTap').addEventListener('click', ()=>{
+  document.getElementById('envelopeTap').classList.add('opening');
   document.getElementById('heartBtn').style.animation = 'none';
   document.getElementById('envelopeCaption').textContent = 'OUVERTURE DE LA LETTRE…';
   document.getElementById('letterEyebrow').style.opacity = '.4';
@@ -740,13 +806,15 @@ document.getElementById('envelopeTap').addEventListener('click', ()=>{
     document.getElementById('envelopeTap').style.display = 'none';
     document.querySelector('#letter-seal .heart-divider').style.display = 'none';
     document.getElementById('letter-open').style.display = 'block';
-    document.getElementById('letter-open').classList.add('fade-in');
+    document.getElementById('letter-open').classList.add('flip-in');
     typeLetter();
-  }, 700);
+  }, 650);
 });
 document.getElementById('closeLetter').addEventListener('click', ()=>{
   document.getElementById('letter-open').style.display = 'none';
+  document.getElementById('letter-open').classList.remove('flip-in');
   document.getElementById('envelopeTap').style.display = 'flex';
+  document.getElementById('envelopeTap').classList.remove('opening');
   document.getElementById('heartBtn').style.animation = '';
   document.getElementById('envelopeCaption').textContent = 'TOUCHER POUR OUVRIR';
   document.getElementById('letterEyebrow').style.opacity = '1';
@@ -766,7 +834,9 @@ function resetAll(){
   document.getElementById('passkey-panel').classList.remove('open');
   document.getElementById('lockLabel').style.opacity = '1';
   document.getElementById('letter-open').style.display = 'none';
+  document.getElementById('letter-open').classList.remove('flip-in');
   document.getElementById('envelopeTap').style.display = 'flex';
+  document.getElementById('envelopeTap').classList.remove('opening');
   document.getElementById('heartBtn').style.animation = '';
   document.getElementById('envelopeCaption').textContent = 'TOUCHER POUR OUVRIR';
   document.getElementById('celebrateBtn').disabled = true;
@@ -795,18 +865,23 @@ function launchConfetti(){
       vy: 2 + Math.random()*3,
       vx: -1.5 + Math.random()*3,
       rot: Math.random()*360,
-      vr: -6 + Math.random()*12
+      vr: -6 + Math.random()*12,
+      flip: Math.random()*Math.PI*2,
+      vFlip: 0.12 + Math.random()*0.18
     });
   }
   let frames = 0;
   function frame(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     particles.forEach(p=>{
-      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.flip += p.vFlip;
+      const tumble = Math.cos(p.flip);
       ctx.save();
       ctx.translate(p.x,p.y);
       ctx.rotate(p.rot*Math.PI/180);
+      ctx.scale(1, tumble);
       ctx.fillStyle = p.c;
+      ctx.globalAlpha = 0.55 + Math.abs(tumble)*0.45;
       ctx.fillRect(-p.r,-p.r*0.4,p.r*2,p.r*0.8);
       ctx.restore();
     });
