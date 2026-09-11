@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Joyeux Anniversaire, Belvida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Marcellus&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wine-950:#1a0508;
+    --wine-900:#2b070c;
+    --wine-800:#4a0d14;
+    --ember:#b3141f;
+    --ember-soft:#7a1520;
+    --rose:#e7b3ab;
+    --cream:#f3e4dd;
+    --gold:#caa06a;
+    --line: rgba(231,179,171,0.22);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Cormorant Garamond', serif;
+    background: radial-gradient(120% 90% at 50% 0%, var(--wine-800) 0%, var(--wine-950) 55%, #0a0203 100%);
+    color: var(--cream);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* Photo de fond fixe, visible du début à la fin. Remplace "bg.jpg" par ta propre image. */
+  .bg-photo{
+    position:fixed; inset:0; z-index:-3;
+    background-image:url('bg.jpg');
+    background-size:cover; background-position:center;
+    animation: kenburnsBg 26s ease-in-out infinite alternate;
+  }
+  @keyframes kenburnsBg{ 0%{ transform:scale(1) translate(0,0); } 100%{ transform:scale(1.12) translate(-1%,-1%); } }
+  .bg-overlay{
+    position:fixed; inset:0; z-index:-2;
+    background: radial-gradient(120% 90% at 50% 0%, rgba(74,13,20,0.72) 0%, rgba(26,5,8,0.88) 55%, rgba(8,2,3,0.96) 100%);
+  }
+
+  .stars{position:fixed; inset:0; pointer-events:none; z-index:0;}
+  .stars span{
+    position:absolute; width:2px; height:2px; background:var(--rose);
+    border-radius:50%; opacity:.35; animation: twinkle 4s infinite ease-in-out;
+  }
+  @keyframes twinkle{ 0%,100%{opacity:.15} 50%{opacity:.6} }
+
+  .app{
+    position:relative; z-index:1;
+    max-width:460px; margin:0 auto;
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    padding: 48px 28px 40px;
+  }
+
+  .screen{ display:none; flex:1; flex-direction:column; opacity:0; }
+  .screen.active{ display:flex; opacity:1; }
+  .screen.fade-in{ animation: fadeIn .7s cubic-bezier(.22,.8,.36,1) forwards; }
+  .screen.fade-out{ animation: fadeOut .32s ease forwards; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(16px) scale(.97); filter:blur(8px);} to{opacity:1; transform:translateY(0) scale(1); filter:blur(0);} }
+  @keyframes fadeOut{ from{opacity:1; transform:scale(1); filter:blur(0);} to{opacity:0; transform:scale(1.03); filter:blur(8px);} }
+
+  .stagger > *{ opacity:0; animation: rise .6s ease forwards; }
+  .stagger > *:nth-child(1){ animation-delay:.05s; }
+  .stagger > *:nth-child(2){ animation-delay:.2s; }
+  .stagger > *:nth-child(3){ animation-delay:.4s; }
+  .stagger > *:nth-child(4){ animation-delay:.6s; }
+  .stagger > *:nth-child(5){ animation-delay:.8s; }
+  @keyframes rise{ from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:translateY(0)} }
+
+  h1.display{
+    font-family:'Marcellus', serif;
+    font-weight:400;
+    font-size: clamp(26px, 7vw, 34px);
+    letter-spacing:.3px;
+    color: var(--cream);
+    line-height:1.15;
+  }
+  .eyebrow{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    color: var(--rose);
+    opacity:.85;
+    font-size:17px;
+    margin-top:10px;
+  }
+
+  /* ---------- LOCK SCREEN ---------- */
+  #lock{ align-items:center; justify-content:center; text-align:center; gap:0; position:relative; }
+  .avatar-wrap{ position:relative; width:120px; height:120px; margin-bottom:10px; }
+  .avatar-ring{
+    position:absolute; inset:-8px; border-radius:50%;
+    border:1px solid var(--line);
+    box-shadow: 0 0 34px 2px rgba(179,20,31,0.45);
+    animation: ringPulse 3s infinite ease-in-out;
+    pointer-events:none;
+  }
+  @keyframes ringPulse{ 0%,100%{ box-shadow:0 0 24px 0 rgba(179,20,31,0.35);} 50%{ box-shadow:0 0 42px 6px rgba(179,20,31,0.6);} }
+  .avatar{
+    width:120px; height:120px; border-radius:50%;
+    background: linear-gradient(160deg, var(--ember-soft), var(--wine-950));
+    display:flex; align-items:center; justify-content:center;
+    border: 1.5px solid rgba(231,179,171,0.4);
+    cursor:pointer; overflow:hidden;
+  }
+  .avatar svg{ width:56px; height:56px; opacity:.85; }
+  .avatar-img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+  .avatar-fallback{ display:none; width:56px; height:56px; opacity:.85; }
+  .mini-heart{ margin-top:6px; font-size:13px; color:var(--ember); animation: pulseHeart 2s infinite ease-in-out; }
+
+  #lockLabel{ margin-top:8px; transition: opacity .3s ease; }
+  .locked-tag{ font-family:'Marcellus', serif; letter-spacing:3px; font-size:14px; color: var(--rose); margin-top:6px;}
+  .locked-sub{ font-size:15px; opacity:.55; margin-top:6px; max-width:240px;}
+
+  #passkey-panel{ width:100%; margin-top:14px; max-height:0; overflow:hidden; opacity:0; transition: max-height .4s ease, opacity .35s ease, margin .4s ease; }
+  #passkey-panel.open{ max-height:520px; opacity:1; margin-top:26px; }
+  .panel-title{ text-align:center; font-family:'Marcellus',serif; font-size:14px; letter-spacing:2.5px; color:var(--rose); opacity:.8; margin-bottom:16px;}
+  .rule-row{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .rule-row .rule-line{ flex:1; height:1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+
+  .dots{ display:flex; justify-content:center; align-items:center; gap:16px; background: rgba(0,0,0,0.35); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:22px;}
+  .dot{ width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-family:'Marcellus',serif; font-size:17px; color:var(--cream); position:relative; }
+  .dot::after{ content:''; position:absolute; bottom:-9px; left:50%; transform:translateX(-50%); width:8px; height:8px; border-radius:50%; border:1px solid var(--rose); opacity:.4; }
+  .dot.filled::after{ background: var(--ember); border-color:var(--ember); opacity:1; box-shadow:0 0 8px var(--ember); }
+  .dots.shake-anim{ animation: shakeDot .4s; }
+  @keyframes shakeDot{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 50%{transform:translateX(8px)} 75%{transform:translateX(-6px)} }
+
+  .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .key{
+    font-family:'Marcellus',serif; font-size:20px; color:var(--cream);
+    background: rgba(74,13,20,0.35); border:1px solid var(--line);
+    border-radius:12px; padding:16px 0; text-align:center; cursor:pointer;
+    transition: .15s; position:relative; overflow:hidden;
+  }
+  .key.pressed{ background: var(--ember-soft); border-color:var(--ember); box-shadow:0 0 16px rgba(179,20,31,0.7); transform: scale(.95); }
+  .key.ghost{ background:transparent; border:none; color: var(--rose); opacity:.6; font-size:15px;}
+  .key-ripple{
+    position:absolute; border-radius:50%; background: rgba(231,179,171,0.45);
+    transform:scale(0); animation: rippleAnim .55s ease-out forwards; pointer-events:none;
+  }
+  @keyframes rippleAnim{ to{ transform:scale(2.6); opacity:0; } }
+  .hint{ text-align:center; font-size:13px; opacity:.4; margin-top:18px; font-style:italic;}
+
+  /* ---------- LOADING (premium) ---------- */
+  #loading{ align-items:center; justify-content:center; text-align:center; }
+  .loader-ring{ position:relative; width:150px; height:150px; margin-bottom:26px; }
+  .ring-svg{ width:100%; height:100%; transform:rotate(-90deg); filter: drop-shadow(0 0 14px rgba(179,20,31,0.5)); }
+  .ring-bg{ fill:none; stroke:rgba(231,179,171,0.15); stroke-width:2.5; }
+  .ring-fg{ fill:none; stroke:url(#ringGradient); stroke-width:2.5; stroke-linecap:round;
+    stroke-dasharray:326.7; stroke-dashoffset:326.7; transition: stroke-dashoffset 2.6s cubic-bezier(.4,0,.2,1); }
+  .ring-orbit{ position:absolute; inset:-10px; border-radius:50%; border:1px dashed rgba(231,179,171,0.25); animation: spin 12s linear infinite; pointer-events:none; }
+  @keyframes spin{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+  .loader-photo{
+    position:absolute; inset:22px; border-radius:50%; overflow:hidden;
+    background: linear-gradient(160deg, var(--ember-soft), var(--wine-950));
+    border:1px solid rgba(231,179,171,0.35);
+    display:flex; align-items:center; justify-content:center;
+    animation: breathe 2.6s ease-in-out infinite;
+  }
+  @keyframes breathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.035); } }
+  .loader-photo img{ width:100%; height:100%; object-fit:cover; }
+  .loader-photo svg{ width:44px; height:44px; opacity:.8; }
+  .loader-photo-fallback{ display:none; align-items:center; justify-content:center; width:100%; height:100%; }
+  .loading-text{
+    font-family:'Marcellus',serif; letter-spacing:1.5px; font-size:18px; margin-bottom:18px;
+    background: linear-gradient(90deg, var(--rose) 0%, var(--gold) 25%, var(--rose) 50%, var(--gold) 75%, var(--rose) 100%);
+    background-size: 220% auto; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation: shimmerMove 2.8s linear infinite;
+  }
+  @keyframes shimmerMove{ 0%{ background-position:0% 50%; } 100%{ background-position:220% 50%; } }
+  .progress-pct{ font-family:'Marcellus',serif; font-size:13px; letter-spacing:2px; color:var(--rose); opacity:.7; margin-top:2px; }
+  .progress-sub{ margin-top:16px; font-size:13px; letter-spacing:3px; opacity:.45; }
+
+  /* shared button */
+  .btn{
+    font-family:'Marcellus',serif; letter-spacing:1px; font-size:15px;
+    color: var(--cream);
+    background: linear-gradient(160deg, var(--ember), var(--ember-soft));
+    border:1px solid rgba(231,179,171,0.35);
+    border-radius: 30px; padding: 15px 38px;
+    cursor:pointer; box-shadow: 0 8px 24px -8px rgba(179,20,31,0.7);
+    transition:.2s;
+  }
+  .btn:active{ transform: scale(.97); }
+  .btn.outline{ background:transparent; box-shadow:none; color:var(--rose); }
+  .btn.glowIn{ animation: btnGlow 1.6s ease .1s both; }
+  @keyframes btnGlow{ 0%{opacity:0; transform:translateY(8px);} 60%{opacity:1;} 100%{opacity:1; transform:translateY(0); box-shadow:0 0 22px rgba(179,20,31,0.5);} }
+
+  /* ---------- WELCOME ---------- */
+  #welcome{ align-items:center; justify-content:center; text-align:center; }
+  .panda{ width:150px; height:150px; margin: 20px 0; position:relative; }
+  .panda svg{ width:100%; height:100%; }
+  .zzz{ position:absolute; top:-6px; right:6px; font-family:'Marcellus',serif; color:var(--rose); font-size:15px; opacity:.7; animation: floatZ2 3s infinite ease-in-out;}
+  @keyframes floatZ2{ 0%,100%{transform:translateY(0); opacity:.7} 50%{transform:translateY(-8px); opacity:1} }
+  .lead{ font-size:19px; opacity:.75; font-style:italic; margin: 6px 0 30px; }
+
+  /* ---------- AGE COUNTER ---------- */
+  #age{ align-items:center; justify-content:center; text-align:center; }
+  .sticker{ width:110px; height:110px; margin: 4px 0 14px; filter: drop-shadow(0 0 24px rgba(179,20,31,0.5)); }
+  .completed-label{ font-size:16px; font-style:italic; opacity:.6; margin: 18px 0 22px; }
+  .stat-big{ font-family:'Marcellus',serif; font-size: clamp(56px,18vw,72px); color: var(--rose); text-shadow: 0 0 30px rgba(179,20,31,0.55); line-height:1; }
+  .stat-label{ letter-spacing:3px; font-size:13px; opacity:.55; margin-top:10px; }
+
+  /* ---------- MEMORIES ---------- */
+  #memories{ align-items:center; text-align:center; }
+  .carousel-viewport{
+    width:100%; overflow-x:auto; scroll-snap-type:x mandatory; display:flex; gap:14px;
+    padding: 26px 21% 8px; scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .carousel-viewport::-webkit-scrollbar{ display:none; }
+  .slide{
+    flex:0 0 78%; scroll-snap-align:center; aspect-ratio:4/5; border-radius:22px; overflow:hidden;
+    border:1px solid var(--line); box-shadow: 0 20px 50px -20px rgba(0,0,0,0.8);
+    background: linear-gradient(150deg, var(--wine-800), var(--wine-950));
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px;
+    scroll-behavior:smooth; position:relative;
+    transform: scale(.9); opacity:.55;
+    transition: transform .35s cubic-bezier(.22,.8,.36,1), opacity .35s ease;
+  }
+  .slide.centered{ transform: scale(1); opacity:1; }
+  .slide img{ width:100%; height:100%; object-fit:cover; animation: kenburnsSlide 9s ease-in-out infinite alternate; }
+  @keyframes kenburnsSlide{ 0%{ transform:scale(1); } 100%{ transform:scale(1.1); } }
+  .slide-fallback{ display:none; width:100%; height:100%; align-items:center; justify-content:center; flex-direction:column; gap:10px; }
+  .slide svg{ width:56px; height:56px; opacity:.5; }
+  .slide-label{ font-family:'Marcellus',serif; font-size:14px; letter-spacing:1px; color:var(--rose); opacity:.6; padding:0 14px; text-align:center;}
+  .dots-nav{ display:flex; gap:7px; justify-content:center; margin: 14px 0 24px; }
+  .dots-nav span{ width:6px; height:6px; border-radius:50%; background: var(--line); transition:.25s; }
+  .dots-nav span.active{ background: var(--ember); box-shadow:0 0 8px var(--ember); }
+
+  /* ---------- LETTER ---------- */
+  #letter-seal{ align-items:center; justify-content:center; text-align:center; }
+  .envelope{
+    width:210px; height:150px; border-radius:16px; border:1.5px solid var(--ember-soft);
+    background: linear-gradient(160deg, var(--wine-800), var(--wine-950));
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px;
+    margin: 30px 0 10px; cursor:pointer; position:relative;
+    box-shadow: inset 0 0 30px rgba(179,20,31,0.15);
+  }
+  .heart-btn{
+    width:60px; height:60px; border-radius:50%; border:1px solid var(--ember);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 0 20px rgba(179,20,31,0.55);
+    animation: pulseHeart 2.2s infinite ease-in-out;
+  }
+  @keyframes pulseHeart{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.1); } }
+  .heart-btn svg{ width:24px; height:24px; }
+  .envelope-caption{ font-family:'Marcellus',serif; font-size:12px; letter-spacing:2px; color: var(--rose); opacity:.75; }
+  .heart-divider{ display:flex; align-items:center; gap:10px; margin-top:18px; width:200px; }
+  .heart-divider .l{ flex:1; height:1px; background: linear-gradient(90deg, transparent, var(--ember)); }
+  .heart-divider .r{ flex:1; height:1px; background: linear-gradient(90deg, var(--ember), transparent); }
+  .heart-divider span{ color: var(--ember); font-size:12px; animation: pulseHeart 2s infinite ease-in-out; }
+
+  #letter-open{ display:none; width:100%; }
+  .letter-card{
+    background: rgba(10,3,4,0.6); border:1px solid var(--line); border-radius:20px;
+    padding: 26px 24px; margin-top:6px; width:100%;
+  }
+  .letter-head{ display:flex; align-items:flex-start; justify-content:space-between; }
+  .letter-title{ font-family:'Marcellus',serif; font-size:20px; color:var(--rose); }
+  .letter-sub{ font-size:14px; font-style:italic; opacity:.55; margin-top:4px; }
+  .close-x{
+    width:30px; height:30px; border-radius:50%; border:1px solid var(--ember); color:var(--rose);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; flex:none;
+  }
+  .letter-body{ margin-top:18px; font-size:18px; line-height:1.65; color: var(--cream); opacity:.92; text-align:left; max-height:280px; overflow-y:auto; }
+  .letter-body p{ margin-bottom:14px; white-space:pre-wrap; }
+  .type-cursor{ display:inline-block; width:1px; background:var(--rose); animation: blink 0.9s infinite; margin-left:1px; }
+  @keyframes blink{ 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  .letter-actions{ display:flex; gap:12px; margin-top:22px; }
+  .letter-actions .btn{ flex:1; padding:13px 0; font-size:14px; }
+  .letter-actions .btn:disabled{ opacity:.35; pointer-events:none; }
+
+  canvas#confetti{ position:fixed; inset:0; pointer-events:none; z-index:5; }
+
+  .brandmark{ text-align:center; font-size:11px; letter-spacing:2px; opacity:.25; margin-top:34px; }
+
+  .sound-toggle{
+    position:fixed; top:16px; right:16px; z-index:10;
+    width:38px; height:38px; border-radius:50%; background: rgba(10,3,4,0.55);
+    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    font-size:16px; cursor:pointer; opacity:0; pointer-events:none; transition: opacity .4s ease;
+  }
+  .sound-toggle.visible{ opacity:1; pointer-events:auto; }
+
+  .verify-state{ text-align:center; font-size:13px; letter-spacing:1px; margin-top:18px; font-style:italic; min-height:18px; transition:.2s; }
+  .verify-state.ok{ color:#8fd19e; opacity:1; font-style:normal; }
+  .verify-state.bad{ color:#e07a7a; opacity:1; font-style:normal; }
+</style>
+</head>
+<body>
+
+<div class="bg-photo" id="bgPhoto"></div>
+<div class="bg-overlay"></div>
+<div class="stars" id="stars"></div>
+<canvas id="confetti"></canvas>
+<audio id="bgMusic" loop preload="auto">
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+<div class="sound-toggle" id="soundToggle" title="Son">🔈</div>
+
+<div class="app">
+
+  <!-- SCREEN 1 : LOCK -->
+  <div class="screen active fade-in" id="lock">
+    <div class="avatar-wrap">
+      <div class="avatar-ring"></div>
+      <div class="avatar" id="avatarTap">
+        <img src="avatar.jpg" alt="" class="avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <svg class="avatar-fallback" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.3"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.1 2 4.5 5.6 4c2-.3 3.6.7 4.4 2.2C10.8 4.7 12.4 3.7 14.4 4c3.6.5 5.2 4.1 3.6 7.7C15.5 16.4 12 21 12 21z"/></svg>
+      </div>
+    </div>
+    <div class="mini-heart">♥</div>
+    <div id="lockLabel">
+      <div class="locked-tag">VERROUILLÉ</div>
+      <div class="locked-sub">Touche la photo pour entrer le code secret</div>
+    </div>
+
+    <div id="passkey-panel">
+      <div class="panel-title">ENTRÉE SÉCURISÉE</div>
+      <div class="dots" id="dots">
+        <div class="dot" data-i="0"></div>
+        <div class="dot" data-i="1"></div>
+        <div class="dot" data-i="2"></div>
+        <div class="dot" data-i="3"></div>
+      </div>
+      <div class="keypad" id="keypad">
+        <div class="key" data-k="1">1</div><div class="key" data-k="2">2</div><div class="key" data-k="3">3</div>
+        <div class="key" data-k="4">4</div><div class="key" data-k="5">5</div><div class="key" data-k="6">6</div>
+        <div class="key" data-k="7">7</div><div class="key" data-k="8">8</div><div class="key" data-k="9">9</div>
+        <div class="key ghost" data-k="clear">effacer</div><div class="key" data-k="0">0</div><div class="key ghost" data-k="back">⌫</div>
+      </div>
+      <div class="hint" id="hintText">Indice : une année qui compte pour nous deux</div>
+      <div class="verify-state" id="verifyState"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2 : LOADING -->
+  <div class="screen" id="loading">
+    <div class="loader-ring">
+      <div class="ring-orbit"></div>
+      <svg class="ring-svg" viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#e7b3ab"/>
+            <stop offset="100%" stop-color="#b3141f"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="60" cy="60" r="52"/>
+        <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52"/>
+      </svg>
+      <div class="loader-photo">
+        <img src="avatar.jpg" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="loader-photo-fallback">
+          <svg viewBox="0 0 24 24" fill="var(--rose)" stroke="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.1 2 4.5 5.6 4c2-.3 3.6.7 4.4 2.2C10.8 4.7 12.4 3.7 14.4 4c3.6.5 5.2 4.1 3.6 7.7C15.5 16.4 12 21 12 21z"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="loading-text">Préparation de ta surprise…</div>
+    <div class="progress-pct" id="progressPct">0%</div>
+    <div class="progress-sub">✦ JUST FOR YOU ✦</div>
+  </div>
+
+  <!-- SCREEN 3 : WELCOME -->
+  <div class="screen" id="welcome">
+    <div class="stagger" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+      <h1 class="display">C'est ton jour, Belvida</h1>
+      <div class="eyebrow">Un petit quelque chose rien que pour toi</div>
+      <div class="panda">
+        <div class="zzz">zzZ</div>
+        <svg viewBox="0 0 100 100">
+          <ellipse cx="50" cy="62" rx="34" ry="24" fill="var(--wine-800)" stroke="var(--rose)" stroke-width="1" opacity="0.9"/>
+          <circle cx="30" cy="34" r="11" fill="var(--wine-800)" stroke="var(--rose)" stroke-width="1"/>
+          <circle cx="70" cy="34" r="11" fill="var(--wine-800)" stroke="var(--rose)" stroke-width="1"/>
+          <circle cx="50" cy="46" r="26" fill="var(--cream)" opacity="0.9"/>
+          <ellipse cx="39" cy="46" rx="7" ry="9" fill="var(--wine-950)"/>
+          <ellipse cx="61" cy="46" rx="7" ry="9" fill="var(--wine-950)"/>
+          <path d="M46 40 l-6 -4 M54 40 l6 -4" stroke="var(--wine-950)" stroke-width="1.4" stroke-linecap="round"/>
+          <ellipse cx="50" cy="58" rx="5" ry="4" fill="var(--wine-950)"/>
+        </svg>
+      </div>
+      <p class="lead">J'ai préparé une petite surprise…</p>
+      <button class="btn" id="startBtn">Commencer</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 4 : AGE COUNTER -->
+  <div class="screen" id="age">
+    <div class="stagger" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+      <svg class="sticker" viewBox="0 0 100 100">
+        <circle cx="50" cy="52" r="30" fill="var(--cream)"/>
+        <circle cx="27" cy="30" r="9" fill="var(--wine-800)"/>
+        <circle cx="73" cy="30" r="9" fill="var(--wine-800)"/>
+        <path d="M38 46 q-2 -6 -8 -4" stroke="var(--wine-950)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M62 46 q2 -6 8 -4" stroke="var(--wine-950)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="34" cy="58" r="5" fill="#e7897c" opacity=".6"/>
+        <circle cx="66" cy="58" r="5" fill="#e7897c" opacity=".6"/>
+        <ellipse cx="50" cy="63" rx="4" ry="3" fill="var(--wine-950)"/>
+      </svg>
+      <h1 class="display">Joyeux Anniversaire, ma belle 🎀</h1>
+      <div class="completed-label">Tu viens de compléter</div>
+      <div class="stat-big" id="ageNumber">0</div>
+      <div class="stat-label">ANNÉES</div>
+      <div style="height:26px"></div>
+      <button class="btn" id="toMemoriesBtn" style="display:none;">Suite <span style="opacity:.7">→</span></button>
+    </div>
+  </div>
+
+  <!-- SCREEN 5 : MEMORIES -->
+  <div class="screen" id="memories">
+    <h1 class="display">Nos souvenirs</h1>
+    <div class="eyebrow">Glisse pour voir la suite</div>
+    <div class="carousel-viewport" id="carousel">
+      <div class="slide">
+        <img src="memory1.jpg" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="slide-fallback">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+          <div class="slide-label">remplace-moi par une photo de vous</div>
+        </div>
+      </div>
+      <div class="slide">
+        <img src="memory2.jpg" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="slide-fallback">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+          <div class="slide-label">souvenir n°2</div>
+        </div>
+      </div>
+      <div class="slide">
+        <img src="memory3.jpg" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="slide-fallback">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+          <div class="slide-label">souvenir n°3</div>
+        </div>
+      </div>
+    </div>
+    <div class="dots-nav" id="dotsNav">
+      <span class="active"></span><span></span><span></span>
+    </div>
+    <button class="btn" id="toLetterBtn">Lire mon message</button>
+  </div>
+
+  <!-- SCREEN 6 : LETTER SEALED -->
+  <div class="screen" id="letter-seal">
+    <h1 class="display">Une lettre, pour toi</h1>
+    <div class="eyebrow" id="letterEyebrow">Touche le cœur pour la découvrir</div>
+    <div class="envelope" id="envelopeTap">
+      <div class="heart-btn" id="heartBtn">
+        <svg viewBox="0 0 24 24" fill="var(--ember)" stroke="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.1 2 4.5 5.6 4c2-.3 3.6.7 4.4 2.2C10.8 4.7 12.4 3.7 14.4 4c3.6.5 5.2 4.1 3.6 7.7C15.5 16.4 12 21 12 21z"/></svg>
+      </div>
+      <div class="envelope-caption" id="envelopeCaption">TOUCHER POUR OUVRIR</div>
+    </div>
+    <div class="heart-divider"><div class="l"></div><span>♥</span><div class="r"></div></div>
+
+    <!-- LETTER OPEN -->
+    <div class="letter-card" id="letter-open">
+      <div class="letter-head">
+        <div>
+          <div class="letter-title">Rien que pour toi</div>
+          <div class="letter-sub">De mon cœur au tien</div>
+        </div>
+        <div class="close-x" id="closeLetter">✕</div>
+      </div>
+      <div class="letter-body" id="letterBody"></div>
+      <div class="letter-actions">
+        <button class="btn" id="celebrateBtn" disabled>Célébrer</button>
+        <button class="btn outline" id="restartBtn">Recommencer ↺</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="brandmark">FAIT AVEC AMOUR</div>
+</div>
+
+<script>
+// stars background
+const starsEl = document.getElementById('stars');
+for(let i=0;i<28;i++){
+  const s = document.createElement('span');
+  s.style.left = Math.random()*100+'%';
+  s.style.top = Math.random()*100+'%';
+  s.style.animationDelay = (Math.random()*4)+'s';
+  starsEl.appendChild(s);
+}
+
+// ---- screen switching with crossfade ----
+function showScreen(id){
+  const cur = document.querySelector('.screen.active');
+  const next = document.getElementById(id);
+  if(cur === next) return;
+  if(cur){
+    cur.classList.remove('fade-in');
+    cur.classList.add('fade-out');
+    setTimeout(()=>{
+      cur.classList.remove('active','fade-out');
+    }, 320);
+  }
+  setTimeout(()=>{
+    next.classList.add('active','fade-in');
+    setTimeout(()=> next.classList.remove('fade-in'), 750);
+  }, cur ? 260 : 0);
+}
+
+// ---- LOCK SCREEN ----
+const PASSKEY = "2006";
+let entered = "";
+const dots = document.querySelectorAll('.dot');
+document.getElementById('avatarTap').addEventListener('click', ()=>{
+  const panel = document.getElementById('passkey-panel');
+  const label = document.getElementById('lockLabel');
+  panel.classList.toggle('open');
+  label.style.opacity = panel.classList.contains('open') ? '0' : '1';
+});
+function refreshDots(){
+  dots.forEach((d,i)=>{
+    d.classList.toggle('filled', i < entered.length);
+    d.textContent = i < entered.length ? entered[i] : '';
+  });
+}
+function shakeAndReset(){
+  document.getElementById('dots').classList.add('shake-anim');
+  setTimeout(()=>{
+    document.getElementById('dots').classList.remove('shake-anim');
+    entered = "";
+    refreshDots();
+  }, 420);
+}
+let verifying = false;
+document.getElementById('keypad').addEventListener('click', (e)=>{
+  if(verifying) return;
+  const key = e.target.closest('.key');
+  if(!key) return;
+  key.classList.add('pressed');
+  setTimeout(()=> key.classList.remove('pressed'), 180);
+  const rect = key.getBoundingClientRect();
+  const ripple = document.createElement('span');
+  ripple.className = 'key-ripple';
+  const size = Math.max(rect.width, rect.height);
+  ripple.style.width = ripple.style.height = size + 'px';
+  const evt = e.touches && e.touches[0] ? e.touches[0] : e;
+  ripple.style.left = (evt.clientX - rect.left - size/2) + 'px';
+  ripple.style.top = (evt.clientY - rect.top - size/2) + 'px';
+  key.appendChild(ripple);
+  setTimeout(()=> ripple.remove(), 550);
+  const k = key.dataset.k;
+  if(k === 'clear'){ entered = ""; refreshDots(); return; }
+  if(k === 'back'){ entered = entered.slice(0,-1); refreshDots(); return; }
+  if(entered.length >= 4) return;
+  entered += k;
+  refreshDots();
+  if(entered.length === 4){
+    verifying = true;
+    const isCorrect = (entered === PASSKEY);
+    const verifyEl = document.getElementById('verifyState');
+    const hintEl = document.getElementById('hintText');
+    hintEl.style.opacity = '0';
+    verifyEl.textContent = 'Vérification du code…';
+    verifyEl.className = 'verify-state';
+
+    // The unlock sound/music must start inside this click handler (synchronously)
+    // so the browser counts it as a direct result of the user's tap.
+    if(isCorrect){
+      const music = document.getElementById('bgMusic');
+      music.volume = 0.55;
+      music.play().catch(()=>{ /* autoplay blocked: user can tap the sound icon */ });
+      document.getElementById('soundToggle').classList.add('visible');
+    }
+
+    setTimeout(()=>{
+      if(isCorrect){
+        verifyEl.textContent = 'Code correct ✓';
+        verifyEl.classList.add('ok');
+        setTimeout(()=>{ showScreen('loading'); startLoading(); }, 500);
+      } else {
+        verifyEl.textContent = 'Code incorrect';
+        verifyEl.classList.add('bad');
+        shakeAndReset();
+        verifying = false;
+        setTimeout(()=>{
+          verifyEl.textContent = '';
+          verifyEl.className = 'verify-state';
+          hintEl.style.opacity = '1';
+        }, 1500);
+      }
+    }, 700);
+  }
+});
+
+// mute/unmute toggle
+document.getElementById('soundToggle').addEventListener('click', ()=>{
+  const music = document.getElementById('bgMusic');
+  music.muted = !music.muted;
+  document.getElementById('soundToggle').textContent = music.muted ? '🔇' : '🔈';
+});
+
+// ---- LOADING (premium ring) ----
+function startLoading(){
+  const ring = document.getElementById('ringFg');
+  const pct = document.getElementById('progressPct');
+  const circumference = 326.7;
+  ring.style.strokeDashoffset = circumference;
+  requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    ring.style.strokeDashoffset = '0';
+  }));
+  const duration = 2600;
+  const start = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now-start)/duration);
+    pct.textContent = Math.round(p*100) + '%';
+    if(p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  setTimeout(()=> showScreen('welcome'), duration + 200);
+}
+
+// ---- WELCOME ----
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  showScreen('age');
+  animateAge();
+});
+
+// ---- AGE COUNTER ----
+let ageAnimated = false;
+function animateAge(){
+  if(ageAnimated) return;
+  ageAnimated = true;
+  const birthYear = 2006;
+  const target = new Date().getFullYear() - birthYear;
+  const el = document.getElementById('ageNumber');
+  const btn = document.getElementById('toMemoriesBtn');
+  let current = 0;
+  const duration = 1400;
+  const start = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now-start)/duration);
+    const eased = 1 - Math.pow(1-p, 3);
+    current = Math.round(eased * target);
+    el.textContent = current;
+    if(p < 1){ requestAnimationFrame(tick); }
+    else{
+      el.textContent = target;
+      btn.style.display = 'inline-block';
+      btn.classList.add('glowIn');
+    }
+  }
+  requestAnimationFrame(tick);
+}
+document.getElementById('toMemoriesBtn').addEventListener('click', ()=>{
+  showScreen('memories');
+  setTimeout(updateDots, 350);
+});
+
+// ---- MEMORIES CAROUSEL ----
+const slides = document.querySelectorAll('.slide');
+const navDots = document.querySelectorAll('#dotsNav span');
+const carousel = document.getElementById('carousel');
+function updateDots(){
+  const idx = Math.round(carousel.scrollLeft / (slides[0].getBoundingClientRect().width + 14));
+  navDots.forEach((d,i)=> d.classList.toggle('active', i===idx));
+  const center = carousel.scrollLeft + carousel.clientWidth/2;
+  slides.forEach(s=>{
+    const sCenter = s.offsetLeft + s.clientWidth/2;
+    s.classList.toggle('centered', Math.abs(sCenter - center) < s.clientWidth * 0.4);
+  });
+}
+carousel.addEventListener('scroll', ()=>{
+  clearTimeout(carousel._t);
+  carousel._t = setTimeout(updateDots, 80);
+});
+setTimeout(updateDots, 60);
+document.getElementById('toLetterBtn').addEventListener('click', ()=> showScreen('letter-seal'));
+
+// ---- LETTER MESSAGE (typewriter) ----
+const letterLines = [
+"Joyeuse anniversaire, mon amour ❤️",
+"",
+"Belvida, tu es la plus belle partie de ma vie. Chaque jour à tes côtés a un goût différent, plus doux, plus léger — et je réalise, à chaque fois un peu plus, la chance que j'ai de t'avoir.",
+"",
+"J'espère que cette nouvelle année t'apporte tout ce que tu mérites : de la joie sans retenue, des rêves qui se réalisent, et un amour aussi grand que celui que tu donnes autour de toi.",
+"",
+"Reste toujours celle que tu es — parce que c'est exactement celle dont je suis tombé amoureux."
+];
+let letterTyped = false;
+function typeLetter(){
+  if(letterTyped) return;
+  letterTyped = true;
+  const body = document.getElementById('letterBody');
+  body.innerHTML = '';
+  const celebrateBtn = document.getElementById('celebrateBtn');
+  let li = 0, ci = 0;
+  function nextChar(){
+    if(li >= letterLines.length){
+      const cursor = body.querySelector('.type-cursor');
+      if(cursor) cursor.remove();
+      celebrateBtn.disabled = false;
+      return;
+    }
+    let p = body.querySelector('p.typing');
+    if(!p){
+      p = document.createElement('p');
+      p.className = 'typing';
+      p.innerHTML = '<span class="txt"></span><span class="type-cursor">&nbsp;</span>';
+      body.appendChild(p);
+    }
+    const line = letterLines[li];
+    const txtSpan = p.querySelector('.txt');
+    if(ci < line.length){
+      txtSpan.textContent += line[ci];
+      ci++;
+      body.scrollTop = body.scrollHeight;
+      setTimeout(nextChar, 16 + Math.random()*14);
+    } else {
+      p.classList.remove('typing');
+      p.querySelector('.type-cursor').remove();
+      li++; ci = 0;
+      setTimeout(nextChar, 120);
+    }
+  }
+  nextChar();
+}
+
+document.getElementById('envelopeTap').addEventListener('click', ()=>{
+  document.getElementById('heartBtn').style.animation = 'none';
+  document.getElementById('envelopeCaption').textContent = 'OUVERTURE DE LA LETTRE…';
+  document.getElementById('letterEyebrow').style.opacity = '.4';
+  setTimeout(()=>{
+    document.getElementById('envelopeTap').style.display = 'none';
+    document.querySelector('#letter-seal .heart-divider').style.display = 'none';
+    document.getElementById('letter-open').style.display = 'block';
+    document.getElementById('letter-open').classList.add('fade-in');
+    typeLetter();
+  }, 700);
+});
+document.getElementById('closeLetter').addEventListener('click', ()=>{
+  document.getElementById('letter-open').style.display = 'none';
+  document.getElementById('envelopeTap').style.display = 'flex';
+  document.getElementById('heartBtn').style.animation = '';
+  document.getElementById('envelopeCaption').textContent = 'TOUCHER POUR OUVRIR';
+  document.getElementById('letterEyebrow').style.opacity = '1';
+  document.querySelector('#letter-seal .heart-divider').style.display = 'flex';
+});
+document.getElementById('celebrateBtn').addEventListener('click', ()=>{
+  launchConfetti();
+});
+function resetAll(){
+  entered=""; refreshDots(); ageAnimated=false; letterTyped=false; verifying=false;
+  const music = document.getElementById('bgMusic');
+  music.pause(); music.currentTime = 0;
+  document.getElementById('soundToggle').classList.remove('visible');
+  document.getElementById('verifyState').textContent = '';
+  document.getElementById('verifyState').className = 'verify-state';
+  document.getElementById('hintText').style.opacity = '1';
+  document.getElementById('passkey-panel').classList.remove('open');
+  document.getElementById('lockLabel').style.opacity = '1';
+  document.getElementById('letter-open').style.display = 'none';
+  document.getElementById('envelopeTap').style.display = 'flex';
+  document.getElementById('heartBtn').style.animation = '';
+  document.getElementById('envelopeCaption').textContent = 'TOUCHER POUR OUVRIR';
+  document.getElementById('celebrateBtn').disabled = true;
+  document.getElementById('toMemoriesBtn').style.display = 'none';
+  document.getElementById('ageNumber').textContent = '0';
+  carousel.scrollTo({left:0});
+  showScreen('lock');
+}
+document.getElementById('restartBtn').addEventListener('click', resetAll);
+
+// ---- CONFETTI ----
+const canvas = document.getElementById('confetti');
+const ctx = canvas.getContext('2d');
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+let particles = [];
+function launchConfetti(){
+  particles = [];
+  const colors = ['#b3141f','#e7b3ab','#caa06a','#f3e4dd'];
+  for(let i=0;i<110;i++){
+    particles.push({
+      x: Math.random()*canvas.width,
+      y: -20 - Math.random()*canvas.height*0.5,
+      r: 3 + Math.random()*4,
+      c: colors[Math.floor(Math.random()*colors.length)],
+      vy: 2 + Math.random()*3,
+      vx: -1.5 + Math.random()*3,
+      rot: Math.random()*360,
+      vr: -6 + Math.random()*12
+    });
+  }
+  let frames = 0;
+  function frame(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.r,-p.r*0.4,p.r*2,p.r*0.8);
+      ctx.restore();
+    });
+    frames++;
+    if(frames < 260) requestAnimationFrame(frame);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  frame();
+}
+</script>
+</body>
+</html>
