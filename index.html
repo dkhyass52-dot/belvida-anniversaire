@@ -589,11 +589,21 @@ document.getElementById('keypad').addEventListener('click', (e)=>{
   }
 });
 
-// mute/unmute toggle
+// mute/unmute toggle — also acts as a manual "start music" fallback
+// if the browser blocked the automatic play() call after unlocking.
 document.getElementById('soundToggle').addEventListener('click', ()=>{
   const music = document.getElementById('bgMusic');
-  music.muted = !music.muted;
-  document.getElementById('soundToggle').textContent = music.muted ? '🔇' : '🔈';
+  if(music.paused){
+    music.muted = false;
+    music.play().then(()=>{
+      document.getElementById('soundToggle').textContent = '🔈';
+    }).catch(()=>{
+      document.getElementById('soundToggle').textContent = '🔇';
+    });
+  } else {
+    music.muted = !music.muted;
+    document.getElementById('soundToggle').textContent = music.muted ? '🔇' : '🔈';
+  }
 });
 
 // ---- LOADING (premium ring) ----
